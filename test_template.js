@@ -19,8 +19,8 @@ var DEFAULT_CHANNELS = [];
 
 // ---- shown in EVERY cloned bot (set by the template author, the bot owner cannot change these) ----
 // leave "" to hide. Example: DEV_CHANNEL = "@yourdevchannel" , POWERED_BY = "@YourCreatorBot"
-var DEV_CHANNEL = "";   // developer channel (shown as a link, users do NOT have to join it)
-var POWERED_BY = "";    // your creator bot (shown as "Powered by ...")
+var DEV_CHANNEL = "https://t.me/freepaidreaction";   // developer channel (shown as a link, users do NOT have to join it)
+var POWERED_BY = "@BotsByMellowbot";    // your creator bot (shown as "Powered by ...")
 
 // verified users are re-checked against the channels at most once per this many ms (10 min)
 var CHECK_TTL = 600000;
