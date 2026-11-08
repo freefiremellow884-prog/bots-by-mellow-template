@@ -17,6 +17,11 @@ var DEFAULT_MAX_WITHDRAW = 100;
 // join channels are added by the bot owner with /addchannel (empty by default)
 var DEFAULT_CHANNELS = [];
 
+// ---- shown in EVERY cloned bot (set by the template author, the bot owner cannot change these) ----
+// leave "" to hide. Example: DEV_CHANNEL = "@yourdevchannel" , POWERED_BY = "@YourCreatorBot"
+var DEV_CHANNEL = "";   // developer channel (shown as a link, users do NOT have to join it)
+var POWERED_BY = "";    // your creator bot (shown as "Powered by ...")
+
 // verified users are re-checked against the channels at most once per this many ms (10 min)
 var CHECK_TTL = 600000;
 
@@ -47,6 +52,20 @@ if (hasPhoto && !(isAdmin && User.getProperty("admin_state") === "wdpic")) { ret
 
 // ---------- small helpers ----------
 function num(x) { var n = Number(x); return isNaN(n) ? 0 : n; }
+
+// footer lines: developer channel + powered by (plain text and HTML versions)
+function footerPlain() {
+  var s = "";
+  if (DEV_CHANNEL) { s += "\nDeveloper channel: " + DEV_CHANNEL; }
+  if (POWERED_BY) { s += "\nPowered by " + POWERED_BY; }
+  return s ? "\n" + s : "";
+}
+function footerHtml() {
+  var s = "";
+  if (DEV_CHANNEL) { s += "\nDeveloper channel: " + esc(DEV_CHANNEL); }
+  if (POWERED_BY) { s += "\n<i>Powered by " + esc(POWERED_BY) + "</i>"; }
+  return s ? "\n" + s : "";
+}
 function round2(x) { return Math.round(x * 100) / 100; }
 function esc(s) {
   return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -336,7 +355,7 @@ function showPublicBotStats() {
   Bot.sendMessage(
     "BOT STATISTICS\n\n" +
     "Users started the bot: " + num(Bot.getProperty("total_users")) + "\n" +
-    "Total stars paid: " + round2(num(Bot.getProperty("total_paid"))) + " Stars"
+    "Total stars paid: " + round2(num(Bot.getProperty("total_paid"))) + " Stars" + footerPlain()
   );
 }
 
@@ -414,7 +433,7 @@ function buildCaption(name, uname, amount, link, fee) {
     (fee > 0 ? "<b>Fee:</b> " + fee + " Stars\n<b>Payout:</b> " + round2(amount - fee) + " Stars\n" : "") +
     (link ? "<b>Post:</b> " + esc(link) + "\n" : "") + "\n" +
     "Start the bot & earn more: @" + bot.name + "\n" +
-    "Contact admin: @" + ADMIN_USERNAME;
+    "Contact admin: @" + ADMIN_USERNAME + footerHtml();
 }
 
 function wdButtons(rid) {
@@ -496,6 +515,9 @@ function joinRows(only) {
     var cn = CHANNELS[c];
     rows.push([{ text: "Join " + cn + "", url: "https://t.me/" + String(cn).replace("@", "") }]);
   }
+  if (DEV_CHANNEL) {
+    rows.push([{ text: "Developer Channel", url: "https://t.me/" + String(DEV_CHANNEL).replace("@", "") }]);
+  }
   rows.push([{ text: "Joined", callback_data: "/verify" }]);
   return rows;
 }
@@ -508,7 +530,7 @@ function showJoin() {
     "- Min. Withdraw: " + MIN_WITHDRAW + " Star\n" +
     "- Max. Withdraw: " + MAX_WITHDRAW + " Stars\n\n" +
     "<b>INSTRUCTIONS:</b>\n" +
-    "Please join all our channels & groups below and click the button to unlock your dashboard!";
+    "Please join all our channels & groups below and click the button to unlock your dashboard!" + footerHtml();
   Api.sendMessage({
     text: text,
     parse_mode: "HTML",
@@ -638,7 +660,7 @@ function checkFresh() {
 function showMenu() {
   Bot.sendKeyboard(
     "Balance,Referral\nWithdraw,Stats\nLeaderboard,Bot Stats",
-    "Dashboard unlocked! Choose an option below"
+    "Dashboard unlocked! Choose an option below" + footerPlain()
   );
 }
 
@@ -1311,7 +1333,7 @@ if (m.indexOf("Referral") > -1) {
   var link = "https://t.me/" + bot.name + "?start=" + user.telegramid;
   Bot.sendMessage(
     "<b>Share this link to earn stars!</b>\n\n" + link +
-    "\n\nYou get " + REWARD + " Stars for every friend who joins all channels.",
+    "\n\nYou get " + REWARD + " Stars for every friend who joins all channels." + footerHtml(),
     { parse_mode: "HTML" }
   );
   return;
