@@ -19,14 +19,14 @@ var DEFAULT_CHANNELS = [];
 
 // ---- shown in EVERY cloned bot (set by the template author, the bot owner cannot change these) ----
 // leave "" to hide. Example: DEV_CHANNEL = "@yourdevchannel" , POWERED_BY = "@YourCreatorBot"
-var DEV_CHANNEL = "https://t.me/freepaidreaction";   // developer channel (shown as a link, users do NOT have to join it)
+var DEV_CHANNEL = "@freepaidreaction";   // developer channel (shown as a link, users do NOT have to join it)
 var POWERED_BY = "@BotsByMellowbot";    // your creator bot (shown as "Powered by ...")
 
 // verified users are re-checked against the channels at most once per this many ms (10 min)
 var CHECK_TTL = 600000;
 
 // message shown when withdrawals are closed (/withdraw off)
-var WD_CLOSED_MSG = "Withdrawal has been closed.";
+var WD_CLOSED_MSG = "\u26D4 Withdrawal has been closed.";
 
 var m = String(message || "");
 
@@ -59,6 +59,9 @@ function footerPlain() {
   if (DEV_CHANNEL) { s += "\nDeveloper channel: " + DEV_CHANNEL; }
   if (POWERED_BY) { s += "\nPowered by " + POWERED_BY; }
   return s ? "\n" + s : "";
+}
+function footerPoweredHtml() {
+  return POWERED_BY ? "\n\n<i>Powered by " + esc(POWERED_BY) + "</i>" : "";
 }
 function footerHtml() {
   var s = "";
@@ -138,7 +141,7 @@ function channelListText() {
 // add: first check the bot can see the channel members (bot must be admin there)
 function startAddChannel(name) {
   if (hasChannel(loadChannels(), name)) {
-    Bot.sendMessage("" + name + " is already in the list.");
+    Bot.sendMessage("\u2139\uFE0F " + name + " is already in the list.");
     return;
   }
   Api.getChatMember({
@@ -158,11 +161,11 @@ function removeChannel(name) {
     if (String(l[q]).toLowerCase() === String(name).toLowerCase()) { found = true; } else { out.push(l[q]); }
   }
   if (!found) {
-    Bot.sendMessage("" + name + " is not in the list.\n\nCurrent channels:\n" + channelListText());
+    Bot.sendMessage("\u274C " + name + " is not in the list.\n\nCurrent channels:\n" + channelListText());
     return;
   }
   Bot.setProperty("ch_list", out, "json");
-  Bot.sendMessage("Channel removed: " + name + "\n\nThe join buttons are updated.\nTotal channels: " + out.length);
+  Bot.sendMessage("\u2705 Channel removed: " + name + "\n\nThe join buttons are updated.\nTotal channels: " + out.length);
 }
 
 // payout channel/group: first check the bot can see it (bot must be admin there)
@@ -207,7 +210,7 @@ if (m.indexOf("/chtest") === 0) {
       chL.push(chNew);
       Bot.setProperty("ch_list", chL, "json");
     }
-    Bot.sendMessageToChatWithId(ADMIN_ID, "Channel added: " + chNew + "\n\nIt will show in the join buttons now.\nVerified users will be asked to join it the next time they use the bot.\nTotal channels: " + chL.length);
+    Bot.sendMessageToChatWithId(ADMIN_ID, "\u2705 Channel added: " + chNew + "\n\nIt will show in the join buttons now.\nVerified users will be asked to join it the next time they use the bot.\nTotal channels: " + chL.length);
   }
   return;
 }
@@ -217,7 +220,7 @@ if (m.indexOf("/chterror") === 0) {
   var chBad = options.bb_options.ch ? options.bb_options.ch : "that channel";
   Bot.sendMessageToChatWithId(
     ADMIN_ID,
-    "Could not add " + chBad + "\n\nCheck that:\n- the link is correct (public channel/group)\n- the bot is an ADMIN of that channel/group"
+    "\u274C Could not add " + chBad + "\n\nCheck that:\n- the link is correct (public channel/group)\n- the bot is an ADMIN of that channel/group"
   );
   return;
 }
@@ -229,7 +232,7 @@ if (m.indexOf("/potest") === 0) {
     Bot.setProperty("payout_chat", poNew, "string");
     Bot.sendMessageToChatWithId(
       ADMIN_ID,
-      "Payout channel set: " + poNew + "\n\nWithdraw requests will be posted there with Approve / Reject buttons.\nMake sure the bot can post messages in it."
+      "\u2705 Payout channel set: " + poNew + "\n\nWithdraw requests will be posted there with Approve / Reject buttons.\nMake sure the bot can post messages in it."
     );
   }
   return;
@@ -240,7 +243,7 @@ if (m.indexOf("/poerror") === 0) {
   var poBad = options.bb_options.ch ? options.bb_options.ch : "that channel";
   Bot.sendMessageToChatWithId(
     ADMIN_ID,
-    "Could not set " + poBad + " as the payout channel\n\nCheck that:\n- the link is correct (public channel/group)\n- the bot is an ADMIN of that channel/group"
+    "\u274C Could not set " + poBad + " as the payout channel\n\nCheck that:\n- the link is correct (public channel/group)\n- the bot is an ADMIN of that channel/group"
   );
   return;
 }
@@ -249,7 +252,7 @@ if (m.indexOf("/poerror") === 0) {
 if (m.indexOf("/picok") === 0) {
   if (hasResult && hasOpts && options.bb_options.pic) {
     Bot.setProperty("wd_pic", String(options.bb_options.pic), "string");
-    Bot.sendMessageToChatWithId(ADMIN_ID, "Withdraw picture saved.\n\nThis picture will be used in every withdraw request post.");
+    Bot.sendMessageToChatWithId(ADMIN_ID, "\u2705 Withdraw picture saved.\n\nThis picture will be used in every withdraw request post.");
   }
   return;
 }
@@ -258,7 +261,7 @@ if (m.indexOf("/picerr") === 0) {
   if (!hasOpts) { return; } // typed by a user -> ignore
   Bot.sendMessageToChatWithId(
     ADMIN_ID,
-    "That picture link did not work. Use a direct image link (jpg / png), or send the picture itself.\n\nSend /withdrawpic to try again."
+    "\u274C That picture link did not work. Use a direct image link (jpg / png), or send the picture itself.\n\nSend /withdrawpic to try again."
   );
   return;
 }
@@ -283,7 +286,7 @@ if (m.indexOf("/grperror") === 0) {
   if (!hasOpts) { return; } // typed by a user -> ignore (no more admin spam)
   Bot.sendMessageToChatWithId(
     ADMIN_ID,
-    "Could not post the withdraw request to the payout channel.\n\n" +
+    "\u26A0\uFE0F Could not post the withdraw request to the payout channel.\n\n" +
     "Check that:\n- the payout channel is set (/payout)\n- the bot is an admin of it\n- the withdraw picture works (/withdrawpic)\n\n" +
     "The request is sent to you below instead."
   );
@@ -329,12 +332,12 @@ function showLeaderboard() {
   keys.sort(function (a, b) { return lb[b] - lb[a]; });
 
   if (keys.length === 0) {
-    Bot.sendMessage("LEADERBOARD\n\nNo referrals yet. Be the first one!");
+    Bot.sendMessage("\uD83C\uDFC6 LEADERBOARD\n\nNo referrals yet. Be the first one! \uD83D\uDC9C");
     return;
   }
 
-  var medals = ["1.", "2.", "3."];
-  var text = "TOP REFERRERS\n\n";
+  var medals = ["\uD83E\uDD47", "\uD83E\uDD48", "\uD83E\uDD49"];
+  var text = "\uD83C\uDFC6 TOP REFERRERS \uD83C\uDFC6\n\n";
   var top = Math.min(10, keys.length);
   for (var i = 0; i < top; i++) {
     var nm = Bot.getProperty("nm_" + keys[i]) || "User";
@@ -343,9 +346,9 @@ function showLeaderboard() {
   }
   var myPos = keys.indexOf(myId);
   if (myPos > -1) {
-    text += "\nYour rank: #" + (myPos + 1) + " (" + lb[myId] + " referrals)";
+    text += "\n\uD83D\uDCCD Your rank: #" + (myPos + 1) + " (" + lb[myId] + " referrals)";
   } else {
-    text += "\nYou are not on the board yet. Share your link!";
+    text += "\n\uD83D\uDCCD You are not on the board yet. Share your link! \uD83D\uDC9C";
   }
   Bot.sendMessage(text);
 }
@@ -353,55 +356,55 @@ function showLeaderboard() {
 // ---------- public bot stats (everyone can see) ----------
 function showPublicBotStats() {
   Bot.sendMessage(
-    "BOT STATISTICS\n\n" +
-    "Users started the bot: " + num(Bot.getProperty("total_users")) + "\n" +
-    "Total stars paid: " + round2(num(Bot.getProperty("total_paid"))) + " Stars" + footerPlain()
+    "\uD83D\uDCC8 BOT STATISTICS \uD83D\uDCC8\n\n" +
+    "\uD83D\uDC65 Users started the bot: " + num(Bot.getProperty("total_users")) + "\n" +
+    "\u2B50 Total stars paid: " + round2(num(Bot.getProperty("total_paid"))) + " Stars" + footerPlain()
   );
 }
 
 // ---------- admin ----------
 function adminPanel() {
   Bot.sendMessage(
-    "ADMIN PANEL\n\n" +
+    "\uD83D\uDEE0\uFE0F ADMIN PANEL\n\n" +
     "Setup status:\n" +
     "Join channels: " + (CHANNELS.length > 0 ? CHANNELS.length + " added" : "none (use /addchannel)") + "\n" +
     "Payout channel: " + (PAYOUT_CHAT ? PAYOUT_CHAT + "" : "not set (use /payout)") + "\n" +
     "Withdraw picture: " + (WD_PIC ? "set" : "not set (use /withdrawpic)") + "\n\n" +
-    "Balance manage:\n" +
+    "\uD83D\uDCB0 Balance manage:\n" +
     "/add +2 @username  -> add 2 stars\n" +
     "/add -2 @username  -> remove 2 stars\n" +
     "(you can also use the user ID instead of @username)\n\n" +
-    "Broadcast:\n" +
+    "\uD83D\uDCE2 Broadcast:\n" +
     "/broadcast  -> send a message to all users\n\n" +
-    "Join channels:\n" +
+    "\uD83D\uDCFA Join channels:\n" +
     "/addchannel  -> add a join channel\n" +
     "/removechannel  -> remove a join channel\n" +
     "(/add channel and /remove channel also work)\n\n" +
-    "Payout channel:\n" +
+    "\uD83D\uDCE2 Payout channel:\n" +
     "/payout  -> set the channel/group where withdraw requests are posted\n" +
     "/payout remove  -> requests come to your DM instead\n\n" +
-    "Withdraw picture:\n" +
+    "\u2728 Withdraw picture:\n" +
     "/withdrawpic  -> set the picture shown in withdraw request posts\n" +
     "/withdrawpic remove  -> posts without a picture\n\n" +
-    "Withdrawals:\n" +
+    "\uD83C\uDFE7 Withdrawals:\n" +
     "/withdraw on  -> users can withdraw\n" +
     "/withdraw off  -> withdrawals closed\n" +
     "(/withdraw alone shows the current status)\n\n" +
-    "Withdraw fee:\n" +
+    "\uD83D\uDCB3 Withdraw fee:\n" +
     "/fee + 1  -> increase the fee by 1 star\n" +
     "/fee - 1  -> decrease the fee by 1 star\n" +
     "(/fee alone shows the current fee)\n\n" +
-    "Referral reward:\n" +
+    "\uD83C\uDF81 Referral reward:\n" +
     "/ref 1  -> set stars per referral\n" +
     "/ref 0.5  -> set 0.5 stars per referral\n" +
     "(/ref alone shows the current reward)\n\n" +
-    "Withdraw limits:\n" +
+    "\uD83D\uDCB8 Withdraw limits:\n" +
     "/min 1  -> set minimum withdraw\n" +
     "/max 100  -> set maximum withdraw\n" +
     "(/min or /max alone shows the current value)\n\n" +
-    "Detailed bot statistics:\n" +
+    "\uD83D\uDCC8 Detailed bot statistics:\n" +
     "/botstats  -> users, stars paid, requests\n\n" +
-    "Set public stats numbers:\n" +
+    "\uD83D\uDD27 Set public stats numbers:\n" +
     "/setstats users 150  -> set users count\n" +
     "/setstats paid 40  -> set total stars paid\n\n" +
     "/cancel  -> cancel current action"
@@ -410,37 +413,37 @@ function adminPanel() {
 
 function showBotStats() {
   Bot.sendMessage(
-    "BOT STATISTICS (admin)\n\n" +
-    "Users started the bot: " + num(Bot.getProperty("total_users")) + "\n" +
-    "Verified users: " + num(Bot.getProperty("total_verified")) + "\n" +
-    "Withdrawals: " + (WD_ON ? "OPEN" : "CLOSED") + "\n" +
-    "Withdraw fee: " + FEE + " Stars\n" +
-    "Referral reward: " + REWARD + " Stars\n\n" +
-    "Withdraw requests: " + num(Bot.getProperty("wd_total")) + "\n" +
-    "Pending: " + num(Bot.getProperty("wd_pending")) + "\n" +
-    "Approved: " + num(Bot.getProperty("wd_approved")) + "\n" +
-    "Rejected: " + num(Bot.getProperty("wd_rejected")) + "\n\n" +
-    "Total stars paid: " + round2(num(Bot.getProperty("total_paid"))) + " Stars"
+    "\uD83D\uDCC8 BOT STATISTICS (admin)\n\n" +
+    "\uD83D\uDC65 Users started the bot: " + num(Bot.getProperty("total_users")) + "\n" +
+    "\u2705 Verified users: " + num(Bot.getProperty("total_verified")) + "\n" +
+    "\uD83C\uDFE7 Withdrawals: " + (WD_ON ? "OPEN" : "CLOSED") + "\n" +
+    "\uD83D\uDCB3 Withdraw fee: " + FEE + " Stars\n" +
+    "\uD83C\uDF81 Referral reward: " + REWARD + " Stars\n\n" +
+    "\uD83D\uDCB8 Withdraw requests: " + num(Bot.getProperty("wd_total")) + "\n" +
+    "\u23F3 Pending: " + num(Bot.getProperty("wd_pending")) + "\n" +
+    "\u2714\uFE0F Approved: " + num(Bot.getProperty("wd_approved")) + "\n" +
+    "\u274C Rejected: " + num(Bot.getProperty("wd_rejected")) + "\n\n" +
+    "\u2B50 Total stars paid: " + round2(num(Bot.getProperty("total_paid"))) + " Stars"
   );
 }
 
 // ---------- withdraw request post (photo + details, or text if no picture is set) ----------
 function buildCaption(name, uname, amount, link, fee) {
   fee = num(fee);
-  return "<b>NEW WITHDRAW REQUEST</b>\n\n" +
-    "<b>User:</b> " + esc(name) + (uname ? " (" + esc(uname) + ")" : "") + "\n" +
-    "<b>Stars:</b> " + amount + "\n" +
-    (fee > 0 ? "<b>Fee:</b> " + fee + " Stars\n<b>Payout:</b> " + round2(amount - fee) + " Stars\n" : "") +
-    (link ? "<b>Post:</b> " + esc(link) + "\n" : "") + "\n" +
-    "Start the bot & earn more: @" + bot.name + "\n" +
-    "Contact admin: @" + ADMIN_USERNAME + footerHtml();
+  return "\uD83D\uDCB8 <b>NEW WITHDRAW REQUEST</b>\n\n" +
+    "\uD83D\uDC64 <b>User:</b> " + esc(name) + (uname ? " (" + esc(uname) + ")" : "") + "\n" +
+    "\u2B50 <b>Stars:</b> " + amount + "\n" +
+    (fee > 0 ? "\uD83D\uDCB3 <b>Fee:</b> " + fee + " Stars\n\u2705 <b>Payout:</b> " + round2(amount - fee) + " Stars\n" : "") +
+    (link ? "\uD83D\uDD17 <b>Post:</b> " + esc(link) + "\n" : "") + "\n" +
+    "\uD83D\uDE80 Start the bot & earn more: @" + bot.name + "\n" +
+    "\uD83D\uDCDE Contact admin: @" + ADMIN_USERNAME + footerPoweredHtml();
 }
 
 function wdButtons(rid) {
   return {
     inline_keyboard: [[
-      { text: "Approve", callback_data: "/wd_ok " + rid },
-      { text: "Reject", callback_data: "/wd_no " + rid }
+      { text: "\u2705 Approve", callback_data: "/wd_ok " + rid },
+      { text: "\u26D4 Reject", callback_data: "/wd_no " + rid }
     ]]
   };
 }
@@ -474,10 +477,10 @@ function postToGroup(rid, name, uname, amount, link, fee) {
 function adminDm(rid, req) {
   Api.sendMessage({
     chat_id: ADMIN_ID,
-    text: "Withdraw request #" + rid + "\n\nUser: " + req.n + " (" + req.u + ")\nID: " + req.uid +
-      "\nAmount: " + req.amt + " Stars" +
-      (feeOf(req) > 0 ? "\nFee: " + feeOf(req) + " Stars\nPayout: " + netOf(req) + " Stars" : "") +
-      (req.l ? "\nPost: " + req.l : ""),
+    text: "\uD83D\uDCB8 Withdraw request #" + rid + "\n\n\uD83D\uDC64 User: " + req.n + " (" + req.u + ")\n\uD83C\uDD94 ID: " + req.uid +
+      "\n\u2B50 Amount: " + req.amt + " Stars" +
+      (feeOf(req) > 0 ? "\n\uD83D\uDCB3 Fee: " + feeOf(req) + " Stars\n\u2705 Payout: " + netOf(req) + " Stars" : "") +
+      (req.l ? "\n\uD83D\uDD17 Post: " + req.l : ""),
     reply_markup: wdButtons(rid)
   });
 }
@@ -513,23 +516,23 @@ function joinRows(only) {
   for (var c = 0; c < CHANNELS.length; c++) {
     if (only && only.indexOf(c) === -1) { continue; }
     var cn = CHANNELS[c];
-    rows.push([{ text: "Join " + cn + "", url: "https://t.me/" + String(cn).replace("@", "") }]);
+    rows.push([{ text: "\uD83D\uDCAC Join " + cn + " \uD83D\uDCAC", url: "https://t.me/" + String(cn).replace("@", "") }]);
   }
   if (DEV_CHANNEL) {
-    rows.push([{ text: "Developer Channel", url: "https://t.me/" + String(DEV_CHANNEL).replace("@", "") }]);
+    rows.push([{ text: "\uD83D\uDCE2 Developer Channel", url: "https://t.me/" + String(DEV_CHANNEL).replace("@", "") }]);
   }
-  rows.push([{ text: "Joined", callback_data: "/verify" }]);
+  rows.push([{ text: "\uD83D\uDC96 Joined \u2705", callback_data: "/verify" }]);
   return rows;
 }
 
 function showJoin() {
   var text =
-    "<b>WELCOME TO STAR EARN</b>\n\n" +
-    "<b>EARNINGS INFO:</b>\n" +
+    "\u2728 <b>WELCOME TO STAR EARN</b> \u2728\n\n" +
+    "\uD83D\uDC9C <b>EARNINGS INFO:</b>\n" +
     "- Per Referral: " + REWARD + " Stars\n" +
     "- Min. Withdraw: " + MIN_WITHDRAW + " Star\n" +
     "- Max. Withdraw: " + MAX_WITHDRAW + " Stars\n\n" +
-    "<b>INSTRUCTIONS:</b>\n" +
+    "\uD83C\uDF38 <b>INSTRUCTIONS:</b>\n" +
     "Please join all our channels & groups below and click the button to unlock your dashboard!" + footerHtml();
   Api.sendMessage({
     text: text,
@@ -549,7 +552,7 @@ function markVerified() {
     var refRes = Libs.ResourcesLib.anotherUserRes("refs", ref);
     refRes.add(1);
     setLbEntry(ref, num(refRes.value()));
-    Bot.sendMessageToChatWithId(ref, "New referral joined! You earned +" + REWARD + " Stars");
+    Bot.sendMessageToChatWithId(ref, "\uD83C\uDF89 New referral joined! You earned +" + REWARD + " Stars \u2B50");
   }
 }
 
@@ -626,8 +629,8 @@ function decideAll(n, act) {
     var missNames = "";
     for (var qq = 0; qq < miss.length; qq++) { missNames += "- " + CHANNELS[miss[qq]] + "\n"; }
     var missText = User.getProperty("verified")
-      ? "<b>You left some channels!</b>\n\nPlease join these again to keep using the bot:\n\n" + missNames + "\nThen press <b>Joined</b>."
-      : "<b>You have not joined all channels yet.</b>\n\nPlease join these:\n\n" + missNames + "\nThen press <b>Joined</b> again.";
+      ? "\u26A0\uFE0F <b>You left some channels!</b>\n\nPlease join these again to keep using the bot:\n\n" + missNames + "\nThen press <b>Joined \u2705</b>."
+      : "\u274C <b>You have not joined all channels yet.</b>\n\nPlease join these:\n\n" + missNames + "\nThen press <b>Joined \u2705</b> again.";
     Api.sendMessage({
       text: missText,
       parse_mode: "HTML",
@@ -642,10 +645,10 @@ function decideAll(n, act) {
       Bot.setProperty("chk_warn_ts", Date.now(), "integer");
       Bot.sendMessageToChatWithId(
         ADMIN_ID,
-        "Membership check failed for: " + errNames.join(", ") + "\n\nUsers cannot pass the join check until this is fixed.\n- Make sure the bot is an ADMIN of that channel/group\n- Or remove it with /removechannel"
+        "\u26A0\uFE0F Membership check failed for: " + errNames.join(", ") + "\n\nUsers cannot pass the join check until this is fixed.\n- Make sure the bot is an ADMIN of that channel/group\n- Or remove it with /removechannel"
       );
     }
-    Bot.sendMessage("Could not check membership. Please try again in a moment.");
+    Bot.sendMessage("\u26A0\uFE0F Could not check membership. Please try again in a moment.");
     return;
   }
 
@@ -659,8 +662,8 @@ function checkFresh() {
 
 function showMenu() {
   Bot.sendKeyboard(
-    "Balance,Referral\nWithdraw,Stats\nLeaderboard,Bot Stats",
-    "Dashboard unlocked! Choose an option below" + footerPlain()
+    "\uD83C\uDF38 Balance,\uD83D\uDC9C Referral\n\u2728 Withdraw,\uD83D\uDCCA Stats\n\uD83C\uDFC6 Leaderboard,\uD83D\uDCC8 Bot Stats",
+    "\u2705 Dashboard unlocked! Choose an option below \uD83D\uDC47" + footerPlain()
   );
 }
 
@@ -686,17 +689,17 @@ function startWithdraw() {
   var bal = num(Libs.ResourcesLib.userRes("balance").value());
   if (bal < MIN_WITHDRAW || bal <= FEE) {
     Bot.sendMessage(
-      "You need more balance to withdraw.\n" +
-      "Minimum withdraw is " + MIN_WITHDRAW + " Star.\nYour balance: " + bal + ""
+      "\u274C You need more balance to withdraw.\n" +
+      "Minimum withdraw is " + MIN_WITHDRAW + " Star.\nYour balance: " + bal + " \u2B50"
     );
     return;
   }
   User.setProperty("wd_state", "amount", "string");
   Bot.sendMessage(
-    "Enter the amount you want to withdraw.\n\n" +
-    "Minimum: " + MIN_WITHDRAW + " Star\n" +
-    "Maximum: " + MAX_WITHDRAW + " Stars\n" +
-    "Your balance: " + bal + " Stars\n\n" +
+    "\uD83D\uDCB8 Enter the amount you want to withdraw.\n\n" +
+    "\u2B07\uFE0F Minimum: " + MIN_WITHDRAW + " Star\n" +
+    "\u2B06\uFE0F Maximum: " + MAX_WITHDRAW + " Stars\n" +
+    "\u2B50 Your balance: " + bal + " Stars\n\n" +
     "(Tap any menu button to cancel)"
   );
 }
@@ -711,7 +714,7 @@ function createWithdraw(amount, link) {
   }
   var res = Libs.ResourcesLib.userRes("balance");
   if (amount < MIN_WITHDRAW || amount > MAX_WITHDRAW || amount > num(res.value()) || amount <= FEE) {
-    Bot.sendMessage("Could not create the withdraw request. Please press Withdraw and try again.");
+    Bot.sendMessage("\u274C Could not create the withdraw request. Please press Withdraw and try again.");
     return;
   }
 
@@ -743,14 +746,14 @@ function createWithdraw(amount, link) {
 
   // confirmation to the user (no fee info)
   var okMsg = {
-    text: "<b>Withdraw request #" + rid + "</b> sent!\n\n" +
-      "Withdraw: <b>" + amount + " Stars</b>\n" +
+    text: "\u2705 <b>Withdraw request #" + rid + "</b> sent!\n\n" +
+      "\u2B50 Withdraw: <b>" + amount + " Stars</b>\n" +
       "\nAdmin will review it soon." +
-      (PAYOUT_LINK ? "\n\nCheck the payout channel:\n" + PAYOUT_LINK : ""),
+      (PAYOUT_LINK ? "\n\n\uD83D\uDCE2 Check the payout channel:\n" + PAYOUT_LINK : ""),
     parse_mode: "HTML"
   };
   if (PAYOUT_LINK) {
-    okMsg.reply_markup = { inline_keyboard: [[{ text: "Check Payout Channel", url: PAYOUT_LINK }]] };
+    okMsg.reply_markup = { inline_keyboard: [[{ text: "\uD83D\uDCE2 Check Payout Channel", url: PAYOUT_LINK }]] };
   }
   Api.sendMessage(okMsg);
 
@@ -799,7 +802,7 @@ if (isAdmin) {
     if (poArg.toLowerCase() === "remove" || poArg.toLowerCase() === "off") {
       Bot.setProperty("payout_chat", "", "string");
       User.setProperty("admin_state", "none", "string");
-      Bot.sendMessage("Payout channel removed.\n\nWithdraw requests will now come to your DM with Approve / Reject buttons.");
+      Bot.sendMessage("\u2705 Payout channel removed.\n\nWithdraw requests will now come to your DM with Approve / Reject buttons.");
       return;
     }
     if (!poArg) {
@@ -814,7 +817,7 @@ if (isAdmin) {
     }
     var poN = parseChannel(poArg);
     if (!poN) {
-      Bot.sendMessage("Invalid link. Send a public channel/group link like:\nhttps://t.me/yourchannel");
+      Bot.sendMessage("\u274C Invalid link. Send a public channel/group link like:\nhttps://t.me/yourchannel");
       return;
     }
     User.setProperty("admin_state", "none", "string");
@@ -828,7 +831,7 @@ if (isAdmin) {
     if (wpArg.toLowerCase() === "remove" || wpArg.toLowerCase() === "off") {
       Bot.setProperty("wd_pic", "", "string");
       User.setProperty("admin_state", "none", "string");
-      Bot.sendMessage("Withdraw picture removed.\n\nWithdraw requests will be posted as text only.");
+      Bot.sendMessage("\u2705 Withdraw picture removed.\n\nWithdraw requests will be posted as text only.");
       return;
     }
     if (!wpArg) {
@@ -863,13 +866,13 @@ if (isAdmin) {
     var wdArg = (cw[1] || "").toLowerCase();
     if (wdArg === "on") {
       Bot.setProperty("wd_off", "0", "string");
-      Bot.sendMessage("Withdrawals are now OPEN.\n\nUsers can withdraw normally.");
+      Bot.sendMessage("\u2705 Withdrawals are now OPEN.\n\nUsers can withdraw normally.");
     } else if (wdArg === "off") {
       Bot.setProperty("wd_off", "1", "string");
-      Bot.sendMessage("Withdrawals are now CLOSED.\n\nUsers will see: \"" + WD_CLOSED_MSG + "\"");
+      Bot.sendMessage("\u26D4 Withdrawals are now CLOSED.\n\nUsers will see: \"" + WD_CLOSED_MSG + "\"");
     } else {
       Bot.sendMessage(
-        "Withdrawals are currently: " + (WD_ON ? "OPEN" : "CLOSED") + "\n\n" +
+        "\uD83C\uDFE7 Withdrawals are currently: " + (WD_ON ? "OPEN" : "CLOSED") + "\n\n" +
         "/withdraw on  -> open\n/withdraw off  -> close"
       );
     }
@@ -881,7 +884,7 @@ if (isAdmin) {
     var refArg = (cw[1] || "").trim();
     if (!refArg) {
       Bot.sendMessage(
-        "Current referral reward: " + REWARD + " Stars per referral\n\n" +
+        "\uD83C\uDF81 Current referral reward: " + REWARD + " Stars per referral\n\n" +
         "To change it:\n/ref 1\n/ref 0.5"
       );
       return;
@@ -898,7 +901,7 @@ if (isAdmin) {
     var oldReward = REWARD;
     Bot.setProperty("ref_reward", newReward, "float");
     Bot.sendMessage(
-      "Referral reward updated\n\n" +
+      "\u2705 Referral reward updated\n\n" +
       "Old reward: " + oldReward + " Stars\nNew reward: " + newReward + " Stars per referral\n\n" +
       "Applies to new referrals from now on."
     );
@@ -910,7 +913,7 @@ if (isAdmin) {
     var feeRest = m.trim().replace(/^\S+\s*/, "").replace(/\s+/g, "");
     if (!feeRest) {
       Bot.sendMessage(
-        "Current withdraw fee: " + FEE + " Stars\n\n" +
+        "\uD83D\uDCB3 Current withdraw fee: " + FEE + " Stars\n\n" +
         "/fee + 1  -> increase by 1\n/fee - 1  -> decrease by 1"
       );
       return;
@@ -927,7 +930,7 @@ if (isAdmin) {
     newFee = round2(newFee);
     Bot.setProperty("wd_fee", newFee, "float");
     Bot.sendMessage(
-      "Withdraw fee updated\n\n" +
+      "\u2705 Withdraw fee updated\n\n" +
       "Old fee: " + FEE + " Stars\nNew fee: " + newFee + " Stars" + feeNote +
       (newFee > 0 ? "\n\nExample: user withdraws " + round2(newFee + 1) + " Stars -> pays " + newFee + " fee -> receives 1 Star." : "")
     );
@@ -948,7 +951,7 @@ if (isAdmin) {
     }
     var chN = parseChannel(chArg);
     if (!chN) {
-      Bot.sendMessage("Invalid link. Send a public channel/group link like:\nhttps://t.me/yourchannel");
+      Bot.sendMessage("\u274C Invalid link. Send a public channel/group link like:\nhttps://t.me/yourchannel");
       return;
     }
     if (chAdd) { startAddChannel(chN); } else { removeChannel(chN); }
@@ -980,7 +983,7 @@ if (isAdmin) {
       return;
     }
     Bot.setProperty(isMin ? "min_wd" : "max_wd", limVal, "float");
-    Bot.sendMessage("" + (isMin ? "Minimum" : "Maximum") + " withdraw set to " + limVal + " Stars.\nUsers will see the new limit now.");
+    Bot.sendMessage("\u2705 " + (isMin ? "Minimum" : "Maximum") + " withdraw set to " + limVal + " Stars.\nUsers will see the new limit now.");
     return;
   }
 
@@ -995,10 +998,10 @@ if (isAdmin) {
     }
     if (what === "users") {
       Bot.setProperty("total_users", Math.round(parseFloat(val)), "integer");
-      Bot.sendMessage("Users count set to " + Math.round(parseFloat(val)));
+      Bot.sendMessage("\u2705 Users count set to " + Math.round(parseFloat(val)));
     } else {
       Bot.setProperty("total_paid", round2(parseFloat(val)), "float");
-      Bot.sendMessage("Total stars paid set to " + round2(parseFloat(val)));
+      Bot.sendMessage("\u2705 Total stars paid set to " + round2(parseFloat(val)));
     }
     return;
   }
@@ -1008,7 +1011,7 @@ if (isAdmin) {
     var rid2 = m.trim().split(/\s+/)[1] || "";
     var req = getObj("wd_" + rid2);
     if (!req) {
-      Bot.sendMessage("Request #" + rid2 + " not found.");
+      Bot.sendMessage("\u274C Request #" + rid2 + " not found.");
       return;
     }
     if (req.s !== "pending") {
@@ -1025,13 +1028,13 @@ if (isAdmin) {
       bump("total_paid", netOf(req), "float");
       Bot.sendMessageToChatWithId(
         req.uid,
-        "Admin approved your withdrawal request of " + req.amt + " Stars\nYour payment is on the way!"
+        "\u2705 Admin approved your withdrawal request of " + req.amt + " Stars\nYour payment is on the way!"
       );
-      updateGroupPost(req, "<b>APPROVED</b>");
+      updateGroupPost(req, "\u2705 <b>APPROVED</b>");
       if (cid >= 0) {
         Bot.sendMessage(
-          "Request #" + rid2 + " APPROVED\n" + req.n + " (" + req.u + ")\n" + req.amt + " Stars" +
-          (feeOf(req) > 0 ? "\nFee: " + feeOf(req) + " Stars\nPayout: " + netOf(req) + " Stars" : "") +
+          "\u2705 Request #" + rid2 + " APPROVED\n\uD83D\uDC64 " + req.n + " (" + req.u + ")\n" + req.amt + " Stars" +
+          (feeOf(req) > 0 ? "\n\uD83D\uDCB3 Fee: " + feeOf(req) + " Stars\n\u2705 Payout: " + netOf(req) + " Stars" : "") +
           "\n\nUser has been notified."
         );
       }
@@ -1042,10 +1045,10 @@ if (isAdmin) {
       bump("wd_rejected", 1);
       // give the full stars back, they were deducted when the request was made
       Libs.ResourcesLib.anotherUserRes("balance", req.uid).add(num(req.amt));
-      Bot.sendMessageToChatWithId(req.uid, "Your withdrawal request of " + req.amt + " Stars was rejected by admin.\nThe " + req.amt + " Stars have been returned to your balance.");
-      updateGroupPost(req, "<b>REJECTED</b>");
+      Bot.sendMessageToChatWithId(req.uid, "\u274C Your withdrawal request of " + req.amt + " Stars was rejected by admin.\nThe " + req.amt + " Stars have been returned to your balance.");
+      updateGroupPost(req, "\u274C <b>REJECTED</b>");
       if (cid >= 0) {
-        Bot.sendMessage("Request #" + rid2 + " REJECTED\n" + req.n + " (" + req.u + ")\n" + req.amt + " Stars returned to the user's balance.\n\nUser has been notified.");
+        Bot.sendMessage("\u274C Request #" + rid2 + " REJECTED\n\uD83D\uDC64 " + req.n + " (" + req.u + ")\n" + req.amt + " Stars returned to the user's balance.\n\nUser has been notified.");
       }
     }
     return;
@@ -1053,14 +1056,14 @@ if (isAdmin) {
 
   if (cmd === "/broadcast") {
     User.setProperty("admin_state", "broadcast", "string");
-    Bot.sendMessage("Broadcast\n\nSend your message to forward to all users.\n\n(/cancel to stop)");
+    Bot.sendMessage("\uD83D\uDCE2 Broadcast\n\nSend your message to forward to all users.\n\n(/cancel to stop)");
     return;
   }
 
   if (cmd === "/cancel") {
     User.setProperty("admin_state", "none", "string");
     User.setProperty("wd_state", "none", "string");
-    Bot.sendMessage("Cancelled.");
+    Bot.sendMessage("\u274E Cancelled.");
     return;
   }
 
@@ -1075,7 +1078,7 @@ if (isAdmin) {
     var amt = round2(parseFloat(amtStr));
     var tid = findUserId(target);
     if (!tid) {
-      Bot.sendMessage("User not found.\n\nUse their numeric ID, or ask them to send any message to the bot so their @username gets saved.");
+      Bot.sendMessage("\u274C User not found.\n\nUse their numeric ID, or ask them to send any message to the bot so their @username gets saved.");
       return;
     }
     var bres = Libs.ResourcesLib.anotherUserRes("balance", tid);
@@ -1087,11 +1090,11 @@ if (isAdmin) {
     var sign = applied >= 0 ? "+" : "";
     var note = (amt < 0 && -amt > before) ? "\n(Balance cannot go below 0)" : "";
     Bot.sendMessage(
-      "Balance updated\n\nUser: " + target + "\nID: " + tid +
-      "\nChange: " + sign + applied + "\nNew balance: " + after + "" + note
+      "\u2705 Balance updated\n\n\uD83D\uDC64 User: " + target + "\n\uD83C\uDD94 ID: " + tid +
+      "\n\u2795\u2796 Change: " + sign + applied + " \u2B50\n\uD83D\uDCB0 New balance: " + after + " \u2B50" + note
     );
     if (applied !== 0) {
-      Bot.sendMessageToChatWithId(tid, "Your balance was updated by admin: " + sign + applied + "\nNew balance: " + after + "");
+      Bot.sendMessageToChatWithId(tid, "\uD83D\uDCB0 Your balance was updated by admin: " + sign + applied + " \u2B50\nNew balance: " + after + " \u2B50");
     }
     return;
   }
@@ -1106,7 +1109,7 @@ if (isAdmin) {
       User.setProperty("admin_state", "none", "string");
       Api.sendPhoto({
         photo: fileId,
-        caption: "Withdraw picture saved.\n\nThis picture will be used in every withdraw request post."
+        caption: "\u2705 Withdraw picture saved.\n\nThis picture will be used in every withdraw request post."
       });
       return;
     }
@@ -1131,7 +1134,7 @@ if (isAdmin) {
   if (adSt === "payout" && m.length > 0 && m.charAt(0) !== "/" && !hasResult && !hasContent) {
     var poName = parseChannel(m);
     if (!poName) {
-      Bot.sendMessage("Invalid link. Send a public channel/group link like:\nhttps://t.me/yourchannel\n\n(/cancel to stop)");
+      Bot.sendMessage("\u274C Invalid link. Send a public channel/group link like:\nhttps://t.me/yourchannel\n\n(/cancel to stop)");
       return;
     }
     User.setProperty("admin_state", "none", "string");
@@ -1143,7 +1146,7 @@ if (isAdmin) {
   if ((adSt === "addchannel" || adSt === "removechannel") && m.length > 0 && m.charAt(0) !== "/" && !hasResult && !hasContent) {
     var chName = parseChannel(m);
     if (!chName) {
-      Bot.sendMessage("Invalid link. Send a public channel/group link like:\nhttps://t.me/yourchannel\n\n(/cancel to stop)");
+      Bot.sendMessage("\u274C Invalid link. Send a public channel/group link like:\nhttps://t.me/yourchannel\n\n(/cancel to stop)");
       return;
     }
     User.setProperty("admin_state", "none", "string");
@@ -1156,7 +1159,7 @@ if (isAdmin) {
     User.setProperty("admin_state", "none", "string");
     Bot.setProperty("bc_text", m, "string");
     Bot.runAll({ command: "/__bc" });
-    Bot.sendMessage("Message sent successfully to all users!");
+    Bot.sendMessage("\u2705 Message sent successfully to all users!");
     return;
   }
 }
@@ -1219,11 +1222,11 @@ if (m.indexOf("/start") === 0) {
     var who = (user.first_name || "Unknown") + (user.last_name ? " " + user.last_name : "");
     Bot.sendMessageToChatWithId(
       ADMIN_ID,
-      "New user started the bot\n\n" +
-      "Name: " + who + "\n" +
-      "Username: " + (user.username ? "@" + user.username : "no username") + "\n" +
-      "ID: " + user.telegramid +
-      (invitedBy ? "\nReferred by ID: " + invitedBy : "")
+      "\uD83C\uDD95 New user started the bot\n\n" +
+      "\uD83D\uDC64 Name: " + who + "\n" +
+      "\uD83D\uDD17 Username: " + (user.username ? "@" + user.username : "no username") + "\n" +
+      "\uD83C\uDD94 ID: " + user.telegramid +
+      (invitedBy ? "\n\uD83E\uDD1D Referred by ID: " + invitedBy : "")
     );
   }
   if (User.getProperty("verified") || isAdmin) {
@@ -1272,36 +1275,36 @@ if (wdState === "amount" || wdState === "link") {
   } else if (wdState === "amount") {
     var tAmt = m.trim();
     if (!/^\d+(\.\d+)?$/.test(tAmt)) {
-      Bot.sendMessage("Please send the amount as a number.\nExample: 5");
+      Bot.sendMessage("\u274C Please send the amount as a number.\nExample: 5");
       return;
     }
     var wAmt = round2(parseFloat(tAmt));
     var wBal = num(Libs.ResourcesLib.userRes("balance").value());
     if (wAmt < MIN_WITHDRAW) {
-      Bot.sendMessage("Minimum withdraw is " + MIN_WITHDRAW + " Star.");
+      Bot.sendMessage("\u274C Minimum withdraw is " + MIN_WITHDRAW + " Star.");
       return;
     }
     if (wAmt > MAX_WITHDRAW) {
-      Bot.sendMessage("Maximum withdrawal amount is " + MAX_WITHDRAW + " Stars.");
+      Bot.sendMessage("\u274C Maximum withdrawal amount is " + MAX_WITHDRAW + " Stars.");
       return;
     }
     if (wAmt <= FEE) {
-      Bot.sendMessage("Please enter a higher amount.");
+      Bot.sendMessage("\u274C Please enter a higher amount.");
       return;
     }
     if (wAmt > wBal) {
-      Bot.sendMessage("Not enough balance.\nYour balance: " + wBal + "");
+      Bot.sendMessage("\u274C Not enough balance.\nYour balance: " + wBal + " \u2B50");
       return;
     }
     User.setProperty("wd_amt", wAmt, "float");
     User.setProperty("wd_state", "link", "string");
-    Bot.sendMessage("Enter your post link.\n\nExample:\nhttps://t.me/yourchannel/123");
+    Bot.sendMessage("\uD83D\uDD17 Enter your post link.\n\nExample:\nhttps://t.me/yourchannel/123");
     return;
   } else {
     var wLink = m.trim();
     var okLink = /^https?:\/\/(t\.me|telegram\.me)\/(c\/\d+|[A-Za-z][A-Za-z0-9_]{3,31})\/\d+(\/\d+)?(\?\S*)?$/i.test(wLink);
     if (!okLink) {
-      Bot.sendMessage("Invalid post link style.\n\nPlease send a Telegram post link like this:\nhttps://t.me/yourchannel/123");
+      Bot.sendMessage("\u274C Invalid post link style.\n\nPlease send a Telegram post link like this:\nhttps://t.me/yourchannel/123");
       return;
     }
     var wAmt2 = num(User.getProperty("wd_amt"));
@@ -1325,14 +1328,14 @@ if (m.indexOf("Bot Stats") > -1) {
 
 if (m.indexOf("Balance") > -1) {
   var bal = Libs.ResourcesLib.userRes("balance").value();
-  Bot.sendMessage("<b>Your Balance:</b> " + bal + " Stars", { parse_mode: "HTML" });
+  Bot.sendMessage("\uD83C\uDF38 <b>Your Balance:</b> " + bal + " Stars \u2B50", { parse_mode: "HTML" });
   return;
 }
 
 if (m.indexOf("Referral") > -1) {
   var link = "https://t.me/" + bot.name + "?start=" + user.telegramid;
   Bot.sendMessage(
-    "<b>Share this link to earn stars!</b>\n\n" + link +
+    "\uD83D\uDC9C <b>Share this link to earn stars!</b>\n\n" + link +
     "\n\nYou get " + REWARD + " Stars for every friend who joins all channels." + footerHtml(),
     { parse_mode: "HTML" }
   );
@@ -1343,7 +1346,7 @@ if (m.indexOf("Stats") > -1) {
   var refs = Libs.ResourcesLib.userRes("refs").value();
   var bal2 = Libs.ResourcesLib.userRes("balance").value();
   Bot.sendMessage(
-    "<b>Your Stats</b>\n\nReferrals: " + refs + "\nBalance: " + bal2 + " Stars",
+    "\uD83D\uDCCA <b>Your Stats</b>\n\n\uD83D\uDC65 Referrals: " + refs + "\n\u2B50 Balance: " + bal2 + " Stars",
     { parse_mode: "HTML" }
   );
   return;
